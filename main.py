@@ -1,76 +1,65 @@
-from flask import Flask, render_template_string
+from flask import Flask, render_template_string, session
 import os
+import secrets
 
 app = Flask(__name__)
+# Generate a random secret key for secure silent detection
+app.secret_key = secrets.token_hex(16)
 
 @app.route('/')
 def index():
+    # Detect if this user is a returning visitor
+    is_returning = session.get('initialized', False)
+    
+    # Mark the session as active for future visits
+    session['initialized'] = True
+    
     return render_template_string("""
     <!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>MORPHLINE 11 | Hyper-Input</title>
+        <title>MORPHLINE 11 | All-Electric</title>
         <style>
-            body { margin: 0; background: #000; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; font-family: sans-serif; color: white; }
+            body { margin: 0; background: #000; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: sans-serif; color: white; }
             
-            /* The Hyper-Input Visual Core */
             .unit-core {
                 width: 160px; height: 160px;
-                background: radial-gradient(circle, #00f2ff, #001a1a);
+                background: radial-gradient(circle, {{ 'cyan' if returning else '#00f2ff' }}, #001a1a);
                 border-radius: 50%;
-                box-shadow: 0 0 40px #00f2ff;
+                box-shadow: 0 0 {{ '100px cyan' if returning else '40px #00f2ff' }};
                 animation: idle-pulse 4s infinite ease-in-out;
-                cursor: pointer; position: relative; z-index: 10;
+                cursor: pointer;
             }
 
-            /* Modal Transition */
-            #app-trigger {
-                display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0,0,0,0.95); z-index: 100;
-                flex-direction: column; align-items: center; justify-content: center;
-            }
-            .plasma-text { color: #00f2ff; letter-spacing: 10px; text-transform: uppercase; font-weight: 100; }
+            #status-bar { position: absolute; bottom: 5%; letter-spacing: 3px; font-size: 0.8rem; opacity: 0.6; }
 
             @keyframes idle-pulse {
-                0%, 100% { transform: scale(1); box-shadow: 0 0 40px #00f2ff; }
-                50% { transform: scale(1.1); box-shadow: 0 0 80px #00f2ff; }
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.1); }
             }
         </style>
     </head>
     <body>
-        <div class="unit-core" id="core" onclick="ignite()"></div>
-        <div id="app-trigger">
-            <h1 class="plasma-text">Cylinders Firing</h1>
-            <p>Affirmative received. Transitioning to All-Electric Stage...</p>
-            <div style="margin-top: 20px; opacity: 0.5; cursor: pointer;" onclick="closeModal()">[ ESC to reset ]</div>
+        <div class="unit-core" onclick="ignite()"></div>
+        <div id="status-bar">
+            SYSTEM: {{ 'RECOGNIZED' if returning else 'INITIALIZING' }} | STAGE: ALL-ELECTRIC
         </div>
 
         <script>
-            // Fast-Key Listener logic
-            document.addEventListener('keydown', function(event) {
-                const fastKeys = ['/', ';', "'"];
-                if (fastKeys.includes(event.key)) {
-                    ignite();
-                }
-                if (event.key === 'Escape') {
-                    closeModal();
-                }
-            });
-
             function ignite() { 
-                document.getElementById('app-trigger').style.display = 'flex';
-                document.getElementById('core').style.boxShadow = '0 0 150px #00f2ff';
+                alert("Transitioning to Plasma Fueled State...");
             }
-            function closeModal() { 
-                document.getElementById('app-trigger').style.display = 'none';
-                document.getElementById('core').style.boxShadow = '0 0 40px #00f2ff';
-            }
+            
+            // Fast-Key affirmative listeners still active
+            document.addEventListener('keydown', (e) => {
+                if (['/', ';', "'"].includes(e.key)) ignite();
+            });
         </script>
     </body>
     </html>
-    """)
+    """, returning=is_returning)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
