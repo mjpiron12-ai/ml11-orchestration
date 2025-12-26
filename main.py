@@ -22,90 +22,73 @@ def index():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>ML11 | Emergent Engine</title>
+        <title>ML11 | Capacity Hub</title>
         <style>
-            :root { --bamboo: #4dbb5b; --cyan: #00f2ff; --dark: #050a05; }
-            body { margin: 0; background: #000; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: 'Courier New', monospace; color: white; perspective: 1000px; }
+            :root { --bamboo: #4dbb5b; --cyan: #00f2ff; --dark: #050a05; --mid-grey: #1a1a1a; }
+            body { margin: 0; background: #000; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: 'Courier New', monospace; color: white; }
             
-            .plasma-core {
-                width: 170px; height: 170px; position: relative;
-                background: radial-gradient(circle, var(--bamboo), var(--dark));
-                border-radius: 50%; box-shadow: 0 0 60px var(--bamboo);
-                animation: pulse var(--ps, 4s) infinite ease-in-out;
-                cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center;
-            }
-
-            .verb-container { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-
-            .emergent-verb {
-                position: absolute; font-size: 0.85rem; letter-spacing: 5px; font-weight: bold;
-                opacity: 0; transform: translateZ(-200px) scale(0.5);
-                transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-            }
-
-            .verb-active { opacity: 1; transform: translateZ(0) scale(1); text-shadow: 0 0 15px var(--bamboo); }
-            .verb-exit { opacity: 0; transform: translateZ(100px) scale(1.5); filter: blur(5px); }
-
-            /* Subtle Referral Hub */
+            /* Persistent Referral Box */
             .referral-hub {
                 position: fixed; bottom: 20px; left: 20px; width: 180px; height: 45px;
-                background: #1a1a1a; border: 1px solid #333; border-radius: 4px;
+                background: var(--mid-grey); border: 1px solid #333; border-radius: 4px;
                 display: flex; align-items: center; justify-content: center;
-                font-size: 0.6rem; letter-spacing: 2px; color: #666; cursor: pointer; transition: 0.3s;
+                font-size: 0.65rem; letter-spacing: 2px; color: #666; cursor: pointer; transition: 0.3s; z-index: 100;
             }
             .referral-hub:hover { border-color: var(--bamboo); color: var(--bamboo); }
+            .referral-hub.copied { color: var(--cyan); border-color: var(--cyan); }
 
+            /* ML11 Toast Styling */
+            #toast {
+                position: fixed; bottom: 80px; left: 20px; padding: 10px 15px;
+                background: rgba(5, 10, 5, 0.95); border: 1px solid var(--bamboo);
+                font-size: 0.6rem; letter-spacing: 1px; color: white;
+                opacity: 0; visibility: hidden; transition: opacity 0.4s, visibility 0.4s;
+                z-index: 150; pointer-events: none;
+            }
+            #toast.visible { opacity: 1; visibility: visible; }
+
+            .plasma-core {
+                width: 150px; height: 150px; background: radial-gradient(circle, var(--bamboo), var(--dark));
+                border-radius: 50%; box-shadow: 0 0 50px var(--bamboo);
+                animation: pulse 4s infinite ease-in-out; cursor: pointer;
+            }
             @keyframes pulse { 0%, 100% { transform: scale(0.95); } 50% { transform: scale(1); } }
         </style>
     </head>
-    <body id="main-body">
-        <div class="referral-hub" onclick="copyRef()">[ SHARE CAPACITY ]</div>
-        
-        <div class="plasma-core" onclick="location.href='/system'">
-            <div class="verb-container" id="v-container">
-                <span class="emergent-verb verb-active">IGNITE</span>
-            </div>
-        </div>
+    <body>
+        <div id="toast">LINK COPIED. +500 CAPACITY WHEN THEY ACTIVATE.</div>
+        <div class="referral-hub" id="ref-btn" onclick="copyReferral()">[ SHARE CAPACITY ]</div>
+        <div class="plasma-core"></div>
 
         <script>
-            const words = ["IGNITE", "ENGAGE", "ALIGN", "ORCHESTRATE", "BUILD", "EVOLVE"];
-            let idx = 0;
-            const container = document.getElementById("v-container");
+            function copyReferral() {
+                const url = "https://morphline11.co/rhizome/node-fs3gg";
+                const btn = document.getElementById('ref-btn');
+                const toast = document.getElementById('toast');
 
-            function cycleVerbs() {
-                const current = container.querySelector(".verb-active");
-                if (current) {
-                    current.classList.remove("verb-active");
-                    current.classList.add("verb-exit");
-                    setTimeout(() => current.remove(), 600);
-                }
+                navigator.clipboard.writeText(url).then(() => {
+                    // Success UI State
+                    btn.innerText = "[ COPIED ]";
+                    btn.classList.add('copied');
+                    toast.classList.add('visible');
 
-                idx = (idx + 1) % words.length;
-                const next = document.createElement("span");
-                next.className = "emergent-verb";
-                next.textContent = words[idx];
-                container.appendChild(next);
+                    // Reset Button Label
+                    setTimeout(() => {
+                        btn.innerText = "[ SHARE CAPACITY ]";
+                        btn.classList.remove('copied');
+                    }, 1200);
 
-                // Force reflow for animation
-                next.offsetHeight; 
-                next.classList.add("verb-active");
-            }
-
-            setInterval(cycleVerbs, 2800);
-
-            function copyRef() {
-                const link = "https://morphline11.co/rhizome/node-fs3gg";
-                navigator.clipboard.writeText(link);
-                alert("Rhizome Link Copied: " + link);
-            }
-
-            function updateData() {
-                fetch('/api/energy').then(r => r.json()).then(d => {
-                    document.querySelector('.plasma-core').style.setProperty('--ps', d.speed);
+                    // Fade Toast
+                    setTimeout(() => {
+                        toast.classList.remove('visible');
+                    }, 2500);
+                }).catch(() => {
+                    toast.innerText = "COPY FAILED. TRY AGAIN.";
+                    toast.style.borderColor = "#ff4444";
+                    toast.classList.add('visible');
+                    setTimeout(() => toast.classList.remove('visible'), 2500);
                 });
             }
-            setInterval(updateData, 5000);
-            updateData();
         </script>
     </body>
     </html>
