@@ -22,7 +22,7 @@ def index():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>ML11 | The Opening</title>
+        <title>ML11 | The Threshold</title>
         <style>
             :root { --bamboo: #4dbb5b; --cyan: #00f2ff; --dark: #050a05; }
             body { margin: 0; background: #000; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: 'Courier New', monospace; color: white; }
@@ -33,10 +33,9 @@ def index():
                 border-radius: 50%; box-shadow: 0 0 50px var(--bamboo);
                 animation: pulse var(--ps, 4s) infinite ease-in-out;
                 cursor: pointer; transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
-                z-index: 10; display: flex; align-items: center; justify-content: center;
+                z-index: 10;
             }
 
-            /* The "Open Door" HUD */
             #engine-hud {
                 position: fixed; top: 0; left: 0; width: 100%; height: 100%;
                 background: rgba(0,0,0,0.98); display: none; opacity: 0;
@@ -44,15 +43,26 @@ def index():
                 z-index: 20; transition: opacity 1s ease;
             }
 
-            .hud-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 80%; max-width: 1000px; }
-            .sector { border: 1px solid var(--bamboo); padding: 30px; text-align: center; transition: 0.3s; }
-            .sector:hover { background: rgba(77, 187, 91, 0.1); border-color: var(--cyan); }
+            .welcome-msg { text-align: center; margin-bottom: 40px; }
+            .guidance { color: var(--bamboo); opacity: 0.7; font-size: 0.9rem; margin-top: 10px; }
 
-            .welcome-msg { margin-bottom: 50px; text-align: center; animation: slideUp 1.5s ease; }
+            .hud-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 80%; max-width: 800px; }
+            .sector { border: 1px solid var(--bamboo); padding: 25px; text-align: center; }
+            .label { font-size: 0.7rem; opacity: 0.6; letter-spacing: 2px; margin-bottom: 10px; }
+
+            .continue-btn {
+                margin-top: 50px; padding: 15px 60px; border: 1px solid var(--cyan);
+                color: var(--cyan); cursor: pointer; letter-spacing: 5px;
+                transition: 0.3s; background: transparent; animation: buttonPulse 2s infinite;
+            }
+            .continue-btn:hover { background: var(--cyan); color: black; box-shadow: 0 0 30px var(--cyan); }
+            
+            .hint { margin-top: 15px; font-size: 0.7rem; opacity: 0.4; }
+
             .dash-active .plasma-core { transform: scale(30); opacity: 0; pointer-events: none; }
             .dash-active #engine-hud { display: flex; opacity: 1; }
             
-            @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes buttonPulse { 0%, 100% { box-shadow: 0 0 5px var(--cyan); } 50% { box-shadow: 0 0 20px var(--cyan); } }
             @keyframes pulse { 0%, 100% { transform: scale(0.95); } 50% { transform: scale(1); } }
         </style>
     </head>
@@ -61,30 +71,31 @@ def index():
         
         <div id="engine-hud">
             <div class="welcome-msg">
-                <h1 style="letter-spacing: 10px; color: var(--bamboo);">DOOR OPEN: ML11 ACTIVE</h1>
-                <p style="opacity: 0.6;">Welcome to the Orchestration Hub. Select a sector to begin.</p>
+                <h1 style="letter-spacing: 15px; color: var(--bamboo); margin: 0;">VEHICLE ENGAGED</h1>
+                <div class="guidance">Let’s get a bit more clarity so we can help you properly.</div>
             </div>
+            
             <div class="hud-grid">
-                <div class="sector" onclick="alert('Brain Sync Active')">
-                    <h3 style="color: var(--cyan);">BRAIN</h3>
-                    <p style="font-size: 0.7rem;">Logic Orchestration</p>
+                <div class="sector">
+                    <div class="label">THRUST STATUS</div>
+                    <div style="color: var(--cyan); font-size: 1.5rem;">ACTIVE</div>
                 </div>
                 <div class="sector">
-                    <h3 style="color: var(--cyan);">FUEL</h3>
-                    <div id="hud-energy" style="font-size: 1.2rem;">---</div>
-                    <p style="font-size: 0.7rem;">Live Capacity</p>
-                </div>
-                <div class="sector" onclick="alert('Satellite Sync Active')">
-                    <h3 style="color: var(--cyan);">LINK</h3>
-                    <p style="font-size: 0.7rem;">Global Reach</p>
+                    <div class="label">SYSTEM CAPACITY IN USE</div>
+                    <div id="hud-energy" style="color: var(--cyan); font-size: 1.5rem;">---</div>
                 </div>
             </div>
-            <p style="margin-top: 50px; cursor: pointer; color: var(--bamboo);" onclick="closeDoor()">[ CLOSE DOOR ]</p>
+
+            <button class="continue-btn" onclick="nextStage()">[ CONTINUE ]</button>
+            <div class="hint">We’ll ask a few questions to understand what you’re trying to build.</div>
+            
+            <div style="margin-top: 40px; font-size: 0.6rem; opacity: 0.2; cursor: pointer;" onclick="closeDoor()">DISENGAGE</div>
         </div>
 
         <script>
             function openDoor() { document.getElementById('main-body').classList.add('dash-active'); }
             function closeDoor() { document.getElementById('main-body').classList.remove('dash-active'); }
+            function nextStage() { alert("Transitioning to Question Protocol..."); }
             
             function updateData() {
                 fetch('/api/energy').then(r => r.json()).then(d => {
