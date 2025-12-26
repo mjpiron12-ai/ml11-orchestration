@@ -22,95 +22,91 @@ def index():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>ML11 | The Breathing Engine</title>
+        <title>ML11 | The Threshold</title>
         <style>
             :root { --bamboo: #4dbb5b; --cyan: #00f2ff; --dark: #050a05; }
-            body { margin: 0; background: #000; height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-family: 'Courier New', monospace; color: white; }
+            body { margin: 0; background: #000; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: 'Courier New', monospace; color: white; }
             
-            /* The Glowing Core */
             .plasma-core {
-                width: 160px; height: 160px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                width: 150px; height: 150px;
                 background: radial-gradient(circle, var(--bamboo), var(--dark));
                 border-radius: 50%; box-shadow: 0 0 50px var(--bamboo);
                 animation: pulse var(--ps, 4s) infinite ease-in-out;
-                cursor: pointer; transition: all 1s ease; z-index: 10;
-                display: flex; align-items: center; justify-content: center;
+                cursor: pointer; transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+                z-index: 10;
             }
 
-            /* Word Loop Styling */
-            .ignite-word {
-                font-size: 0.8rem; letter-spacing: 0.15em; font-weight: bold;
-                transition: opacity 0.6s ease-in-out, text-shadow 0.6s ease-in-out;
+            #engine-hud {
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.98); display: none; opacity: 0;
+                flex-direction: column; align-items: center; justify-content: center;
+                z-index: 20; transition: opacity 1s ease;
             }
-            .fade-out { opacity: 0; }
-            .fade-in { opacity: 1; text-shadow: 0 0 12px var(--bamboo); }
 
-            #world-canvas { flex-grow: 1; display: none; opacity: 0; flex-direction: column; align-items: center; justify-content: center; transition: opacity 2s ease; }
-            .bottom-dock { height: 150px; display: none; justify-content: center; align-items: flex-end; gap: 20px; padding-bottom: 30px; opacity: 0; transition: opacity 2s ease; }
-            .dock-box { border: 1px solid var(--bamboo); padding: 15px; width: 200px; text-align: center; opacity: 0.3; transition: 0.4s; cursor: pointer; background: rgba(0,0,0,0.8); }
-            .dock-box:hover { opacity: 1; transform: scale(1.1) translateY(-10px); border-color: var(--cyan); box-shadow: 0 0 20px var(--bamboo); }
+            .hud-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 90%; max-width: 1100px; margin-top: 30px; }
+            .sector { border: 1px solid var(--bamboo); padding: 30px; text-align: center; }
+            .hud-title { color: var(--bamboo); font-size: 0.9rem; letter-spacing: 5px; margin-bottom: 15px; border-bottom: 1px solid var(--bamboo); padding-bottom: 10px; }
+            .hud-val { font-size: 1.5rem; color: var(--cyan); margin-bottom: 10px; }
+            .microcopy { font-size: 0.7rem; opacity: 0.5; line-height: 1.4; }
 
-            .world-active .plasma-core { transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; }
-            .world-active #world-canvas, .world-active .bottom-dock { display: flex; opacity: 1; }
+            .reassurance { margin-bottom: 20px; font-size: 1rem; color: white; opacity: 0.9; letter-spacing: 1px; text-align: center; max-width: 600px; }
+
+            .continue-btn {
+                margin-top: 50px; padding: 15px 80px; border: 1px solid var(--cyan);
+                color: var(--cyan); cursor: pointer; letter-spacing: 5px;
+                transition: 0.3s; background: transparent; font-family: inherit;
+            }
+            .continue-btn:hover { background: var(--cyan); color: black; box-shadow: 0 0 30px var(--cyan); }
             
-            @keyframes pulse { 0%, 100% { transform: translate(-50%, -50%) scale(0.95); } 50% { transform: translate(-50%, -50%) scale(1); } }
+            .trust-line { margin-top: 15px; font-size: 0.65rem; opacity: 0.3; letter-spacing: 1px; }
+
+            .dash-active .plasma-core { transform: scale(30); opacity: 0; pointer-events: none; }
+            .dash-active #engine-hud { display: flex; opacity: 1; }
+            
+            @keyframes pulse { 0%, 100% { transform: scale(0.95); } 50% { transform: scale(1); } }
         </style>
     </head>
     <body id="main-body">
-        <div class="plasma-core" id="ignite-trigger" onclick="enterWorld()">
-            <span id="ignite-word" class="ignite-word">IGNITE</span>
-        </div>
+        <div class="plasma-core" id="core" onclick="openDoor()"></div>
         
-        <div id="world-canvas">
-            <h1 style="letter-spacing: 20px; color: var(--bamboo);">WORLD VISUALIZED</h1>
-            <div style="margin-top: 30px; border: 1px solid var(--cyan); padding: 10px 20px; font-size: 0.8rem; cursor: pointer;">
-                [ EXPAND NETWORK ]
-            </div>
-        </div>
+        <div id="engine-hud">
+            <div class="reassurance">We’ll ask a few quick questions to understand your goal — nothing is committed yet.</div>
+            
+            <div class="hud-grid">
+                <div class="sector">
+                    <div class="hud-title">ORCHESTRATION</div>
+                    <div class="hud-val">ACTIVE</div>
+                    <div class="microcopy">Structuring your idea so the next steps are clear.</div>
+                </div>
+                
+                <div class="sector">
+                    <div class="hud-title">SATELLITE</div>
+                    <div class="hud-val">SYNCED</div>
+                    <div class="microcopy">Preparing the tools needed to support your goal.</div>
+                </div>
 
-        <div class="bottom-dock">
-            <div class="dock-box"><div style="font-size:0.7rem; color:var(--bamboo);">ORCHESTRATION</div><div>ACTIVE</div></div>
-            <div class="dock-box"><div style="font-size:0.7rem; color:var(--bamboo);">SATELLITE</div><div>SYNCED</div></div>
-            <div class="dock-box"><div style="font-size:0.7rem; color:var(--bamboo);">CAPACITY</div><div id="hud-energy">---</div></div>
+                <div class="sector">
+                    <div class="hud-title">CAPACITY</div>
+                    <div class="hud-val" id="hud-energy">---</div>
+                    <div class="microcopy">Shared system capacity. Your usage is well within the free range.</div>
+                </div>
+            </div>
+
+            <button class="continue-btn" onclick="nextStage()">[ CONTINUE ]</button>
+            <div class="trust-line">No credit card required. You’ll see options before anything is final.</div>
+            
+            <div style="margin-top: 40px; font-size: 0.6rem; opacity: 0.2; cursor: pointer;" onclick="closeDoor()">Return to core</div>
         </div>
 
         <script>
-            const words = ["IGNITE", "ENGAGE", "ALIGN", "ORCHESTRATE", "BUILD", "EVOLVE"];
-            let idx = 0;
-            let interval = null;
-            const wordEl = document.getElementById("ignite-word");
-            const trigger = document.getElementById("ignite-trigger");
-
-            function startLoop() {
-                if (interval) return;
-                interval = setInterval(() => {
-                    wordEl.classList.add("fade-out");
-                    setTimeout(() => {
-                        idx = (idx + 1) % words.length;
-                        wordEl.textContent = words[idx];
-                        wordEl.classList.remove("fade-out");
-                        wordEl.classList.add("fade-in");
-                    }, 600);
-                }, 2800);
-            }
-
-            function stopLoop() {
-                clearInterval(interval);
-                interval = null;
-                idx = 0;
-                wordEl.textContent = "IGNITE";
-                wordEl.classList.remove("fade-out", "fade-in");
-            }
-
-            trigger.addEventListener("mouseenter", startLoop);
-            trigger.addEventListener("mouseleave", stopLoop);
-
-            function enterWorld() { document.getElementById('main-body').classList.add('world-active'); }
+            function openDoor() { document.getElementById('main-body').classList.add('dash-active'); }
+            function closeDoor() { document.getElementById('main-body').classList.remove('dash-active'); }
+            function nextStage() { alert("Transitioning to Question Protocol..."); }
             
             function updateData() {
                 fetch('/api/energy').then(r => r.json()).then(d => {
                     document.getElementById('hud-energy').innerText = d.energy;
-                    trigger.style.setProperty('--ps', d.speed);
+                    document.getElementById('core').style.setProperty('--ps', d.speed);
                 });
             }
             setInterval(updateData, 5000);
