@@ -22,71 +22,82 @@ def index():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>ML11 | Capacity Hub</title>
+        <title>ML11 | v0.01 Threshold</title>
         <style>
             :root { --bamboo: #4dbb5b; --cyan: #00f2ff; --dark: #050a05; --mid-grey: #1a1a1a; }
-            body { margin: 0; background: #000; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: 'Courier New', monospace; color: white; }
+            body { margin: 0; background: #000; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: 'Courier New', monospace; color: white; perspective: 1000px; }
             
-            /* Persistent Referral Box */
+            /* Persistent Referral Hub */
             .referral-hub {
                 position: fixed; bottom: 20px; left: 20px; width: 180px; height: 45px;
                 background: var(--mid-grey); border: 1px solid #333; border-radius: 4px;
                 display: flex; align-items: center; justify-content: center;
-                font-size: 0.65rem; letter-spacing: 2px; color: #666; cursor: pointer; transition: 0.3s; z-index: 100;
+                font-size: 0.65rem; letter-spacing: 2px; color: #666; cursor: pointer; transition: 0.3s; z-index: 1000;
             }
             .referral-hub:hover { border-color: var(--bamboo); color: var(--bamboo); }
-            .referral-hub.copied { color: var(--cyan); border-color: var(--cyan); }
+            
+            /* Toast */
+            #toast { position: fixed; bottom: 80px; left: 20px; padding: 10px 15px; background: rgba(5,10,5,0.9); border: 1px solid var(--bamboo); font-size: 0.6rem; opacity: 0; transition: 0.4s; z-index: 1100; pointer-events: none; }
+            #toast.visible { opacity: 1; }
 
-            /* ML11 Toast Styling */
-            #toast {
-                position: fixed; bottom: 80px; left: 20px; padding: 10px 15px;
-                background: rgba(5, 10, 5, 0.95); border: 1px solid var(--bamboo);
-                font-size: 0.6rem; letter-spacing: 1px; color: white;
-                opacity: 0; visibility: hidden; transition: opacity 0.4s, visibility 0.4s;
-                z-index: 150; pointer-events: none;
-            }
-            #toast.visible { opacity: 1; visibility: visible; }
+            /* HUD & Question Protocol */
+            #engine-hud { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; opacity: 0; flex-direction: column; align-items: center; justify-content: center; z-index: 500; transition: 1s; }
+            #question-stage { display: none; text-align: center; max-width: 600px; }
+            
+            .world-active #engine-hud { display: flex; opacity: 1; }
+            .question-active #hud-grid, .question-active .reassurance { display: none; }
+            .question-active #question-stage { display: block; }
 
-            .plasma-core {
-                width: 150px; height: 150px; background: radial-gradient(circle, var(--bamboo), var(--dark));
-                border-radius: 50%; box-shadow: 0 0 50px var(--bamboo);
-                animation: pulse 4s infinite ease-in-out; cursor: pointer;
-            }
-            @keyframes pulse { 0%, 100% { transform: scale(0.95); } 50% { transform: scale(1); } }
+            .plasma-core { width: 150px; height: 150px; background: radial-gradient(circle, var(--bamboo), var(--dark)); border-radius: 50%; box-shadow: 0 0 50px var(--bamboo); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
+            .emergent-verb { position: absolute; font-size: 0.8rem; letter-spacing: 5px; opacity: 0; transform: translateZ(-100px); transition: 0.6s; }
+            .verb-active { opacity: 1; transform: translateZ(0); }
+
+            .btn { margin-top: 40px; padding: 15px 40px; border: 1px solid var(--cyan); color: var(--cyan); background: transparent; cursor: pointer; font-family: inherit; letter-spacing: 3px; }
+            .btn:hover { background: var(--cyan); color: black; }
         </style>
     </head>
-    <body>
-        <div id="toast">LINK COPIED. +500 CAPACITY WHEN THEY ACTIVATE.</div>
-        <div class="referral-hub" id="ref-btn" onclick="copyReferral()">[ SHARE CAPACITY ]</div>
-        <div class="plasma-core"></div>
+    <body id="main-body">
+        <div id="toast">LINK COPIED. +500 CAPACITY ON ACTIVATION.</div>
+        <div class="referral-hub" id="ref-btn" onclick="copyRef()">[ SHARE CAPACITY ]</div>
+        
+        <div class="plasma-core" id="core" onclick="enterWorld()">
+            <span id="verb" class="emergent-verb verb-active">IGNITE</span>
+        </div>
+
+        <div id="engine-hud">
+            <div id="hud-content" style="text-align:center;">
+                <div class="reassurance">Preparing the tools needed to support your goal.</div>
+                <button class="btn" onclick="startQuestions()">[ CONTINUE ]</button>
+            </div>
+
+            <div id="question-stage">
+                <h2 style="color: var(--bamboo); letter-spacing: 8px;">PROTOCOL 01</h2>
+                <p style="opacity: 0.7;">What is your primary orchestration goal?</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px;">
+                    <div class="btn" style="padding:20px;" onclick="alert('Demo Path Initializing...')">I WANT A DEMO</div>
+                    <div class="btn" style="padding:20px;" onclick="alert('Live Node Initializing...')">I WANT TO BUILD LIVE</div>
+                </div>
+            </div>
+        </div>
 
         <script>
-            function copyReferral() {
-                const url = "https://morphline11.co/rhizome/node-fs3gg";
-                const btn = document.getElementById('ref-btn');
-                const toast = document.getElementById('toast');
+            const words = ["IGNITE", "ENGAGE", "ALIGN", "ORCHESTRATE", "BUILD", "EVOLVE"];
+            let idx = 0;
+            setInterval(() => {
+                idx = (idx + 1) % words.length;
+                document.getElementById('verb').textContent = words[idx];
+            }, 2800);
 
-                navigator.clipboard.writeText(url).then(() => {
-                    // Success UI State
-                    btn.innerText = "[ COPIED ]";
-                    btn.classList.add('copied');
-                    toast.classList.add('visible');
-
-                    // Reset Button Label
-                    setTimeout(() => {
-                        btn.innerText = "[ SHARE CAPACITY ]";
-                        btn.classList.remove('copied');
-                    }, 1200);
-
-                    // Fade Toast
-                    setTimeout(() => {
-                        toast.classList.remove('visible');
-                    }, 2500);
-                }).catch(() => {
-                    toast.innerText = "COPY FAILED. TRY AGAIN.";
-                    toast.style.borderColor = "#ff4444";
-                    toast.classList.add('visible');
-                    setTimeout(() => toast.classList.remove('visible'), 2500);
+            function enterWorld() { document.getElementById('main-body').classList.add('world-active'); }
+            function startQuestions() { document.getElementById('main-body').classList.add('question-active'); }
+            
+            function copyRef() {
+                navigator.clipboard.writeText("https://morphline11.co/rhizome/node-fs3gg").then(() => {
+                    const b = document.getElementById('ref-btn');
+                    const t = document.getElementById('toast');
+                    b.innerText = "[ COPIED ]";
+                    t.classList.add('visible');
+                    setTimeout(() => { b.innerText = "[ SHARE CAPACITY ]"; t.classList.remove('visible'); }, 2000);
                 });
             }
         </script>
