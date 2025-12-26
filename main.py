@@ -14,88 +14,98 @@ def get_energy():
     except:
         return jsonify({"speed": "4s", "energy": "Stabilizing..."})
 
-@app.route('/rhizome/<node_id>')
-def referral_landing(node_id):
+@app.route('/')
+def index():
     return render_template_string("""
     <!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>ML11 | Unit Allocated</title>
+        <title>ML11 | Emergent Engine</title>
         <style>
-            :root { --bamboo: #4dbb5b; --dark: #050a05; }
-            body { margin: 0; background: #000; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; font-family: 'Courier New', monospace; color: white; }
+            :root { --bamboo: #4dbb5b; --cyan: #00f2ff; --dark: #050a05; }
+            body { margin: 0; background: #000; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: 'Courier New', monospace; color: white; perspective: 1000px; }
+            
             .plasma-core {
-                width: 160px; height: 160px;
+                width: 170px; height: 170px; position: relative;
                 background: radial-gradient(circle, var(--bamboo), var(--dark));
-                border-radius: 50%; box-shadow: 0 0 50px var(--bamboo);
-                animation: pulse 4s infinite ease-in-out; cursor: pointer;
-                display: flex; align-items: center; justify-content: center;
+                border-radius: 50%; box-shadow: 0 0 60px var(--bamboo);
+                animation: pulse var(--ps, 4s) infinite ease-in-out;
+                cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center;
             }
-            .msg { margin-top: 40px; text-align: center; max-width: 400px; line-height: 1.6; }
+
+            .verb-container { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+
+            .emergent-verb {
+                position: absolute; font-size: 0.85rem; letter-spacing: 5px; font-weight: bold;
+                opacity: 0; transform: translateZ(-200px) scale(0.5);
+                transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+            }
+
+            .verb-active { opacity: 1; transform: translateZ(0) scale(1); text-shadow: 0 0 15px var(--bamboo); }
+            .verb-exit { opacity: 0; transform: translateZ(100px) scale(1.5); filter: blur(5px); }
+
+            /* Subtle Referral Hub */
+            .referral-hub {
+                position: fixed; bottom: 20px; left: 20px; width: 180px; height: 45px;
+                background: #1a1a1a; border: 1px solid #333; border-radius: 4px;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 0.6rem; letter-spacing: 2px; color: #666; cursor: pointer; transition: 0.3s;
+            }
+            .referral-hub:hover { border-color: var(--bamboo); color: var(--bamboo); }
+
             @keyframes pulse { 0%, 100% { transform: scale(0.95); } 50% { transform: scale(1); } }
         </style>
     </head>
-    <body>
-        <div class="plasma-core" onclick="location.href='/'">
-            <span style="font-size: 0.7rem; letter-spacing: 2px;">IGNITE</span>
-        </div>
-        <div class="msg">
-            <h2 style="color: var(--bamboo); letter-spacing: 5px;">UNIT ALLOCATED</h2>
-            <p style="font-size: 0.8rem; opacity: 0.6;">A peer has shared their system capacity with you. Click the core to initialize your node.</p>
-        </div>
-    </body>
-    </html>
-    """)
-
-@app.route('/')
-def index():
-    # ... (Keep existing index logic with the grey referral box)
-    return render_template_string("""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>ML11 | The Hub</title>
-        <style>
-            :root { --bamboo: #4dbb5b; --cyan: #00f2ff; --mid-grey: #2a2a2a; }
-            body { margin: 0; background: #000; height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-family: 'Courier New', monospace; color: white; }
-            .referral-hub {
-                position: fixed; bottom: 20px; left: 20px; width: 180px; height: 45px;
-                background: var(--mid-grey); border: 1px solid #444; border-radius: 4px;
-                display: flex; align-items: center; justify-content: center;
-                font-size: 0.65rem; letter-spacing: 2px; color: #888;
-                cursor: pointer; z-index: 1000; transition: 0.3s;
-            }
-            .referral-hub:hover { background: #333; color: var(--bamboo); border-color: var(--bamboo); }
-            .plasma-core {
-                width: 150px; height: 150px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-                background: radial-gradient(circle, var(--bamboo), #050a05);
-                border-radius: 50%; box-shadow: 0 0 50px var(--bamboo);
-                animation: pulse 4s infinite ease-in-out; cursor: pointer;
-            }
-            #world-canvas { flex-grow: 1; display: none; opacity: 0; flex-direction: column; align-items: center; justify-content: center; transition: 2s; }
-            .world-active .plasma-core { display: none; }
-            .world-active #world-canvas { display: flex; opacity: 1; }
-            @keyframes pulse { 0%, 100% { transform: translate(-50%, -50%) scale(0.95); } 50% { transform: translate(-50%, -50%) scale(1); } }
-        </style>
-    </head>
     <body id="main-body">
-        <div class="referral-hub" onclick="copyReferral()">[ SHARE CAPACITY ]</div>
-        <div class="plasma-core" onclick="enterWorld()"></div>
-        <div id="world-canvas">
-            <h1 style="letter-spacing: 15px; color: var(--bamboo);">SYSTEM VIEW</h1>
-            <div style="border: 1px solid #333; padding: 15px 30px; color: #444; cursor: not-allowed; margin-top: 30px;">[ DOWNLOAD WORK ]</div>
+        <div class="referral-hub" onclick="copyRef()">[ SHARE CAPACITY ]</div>
+        
+        <div class="plasma-core" onclick="location.href='/system'">
+            <div class="verb-container" id="v-container">
+                <span class="emergent-verb verb-active">IGNITE</span>
+            </div>
         </div>
+
         <script>
-            function enterWorld() { document.getElementById('main-body').classList.add('world-active'); }
-            function copyReferral() {
-                const link = "https://morphline11.co/rhizome/node-" + Math.random().toString(36).substr(2, 5);
+            const words = ["IGNITE", "ENGAGE", "ALIGN", "ORCHESTRATE", "BUILD", "EVOLVE"];
+            let idx = 0;
+            const container = document.getElementById("v-container");
+
+            function cycleVerbs() {
+                const current = container.querySelector(".verb-active");
+                if (current) {
+                    current.classList.remove("verb-active");
+                    current.classList.add("verb-exit");
+                    setTimeout(() => current.remove(), 600);
+                }
+
+                idx = (idx + 1) % words.length;
+                const next = document.createElement("span");
+                next.className = "emergent-verb";
+                next.textContent = words[idx];
+                container.appendChild(next);
+
+                // Force reflow for animation
+                next.offsetHeight; 
+                next.classList.add("verb-active");
+            }
+
+            setInterval(cycleVerbs, 2800);
+
+            function copyRef() {
+                const link = "https://morphline11.co/rhizome/node-fs3gg";
                 navigator.clipboard.writeText(link);
                 alert("Rhizome Link Copied: " + link);
             }
+
+            function updateData() {
+                fetch('/api/energy').then(r => r.json()).then(d => {
+                    document.querySelector('.plasma-core').style.setProperty('--ps', d.speed);
+                });
+            }
+            setInterval(updateData, 5000);
+            updateData();
         </script>
     </body>
     </html>
