@@ -22,91 +22,107 @@ def index():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>ML11 | The Threshold</title>
+        <title>ML11 | The Possibility Window</title>
         <style>
             :root { --bamboo: #4dbb5b; --cyan: #00f2ff; --dark: #050a05; }
-            body { margin: 0; background: #000; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: 'Courier New', monospace; color: white; }
+            body { margin: 0; background: #000; height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-family: 'Courier New', monospace; color: white; }
             
+            /* The Glowing Ignition Point */
             .plasma-core {
-                width: 150px; height: 150px;
+                width: 160px; height: 160px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
                 background: radial-gradient(circle, var(--bamboo), var(--dark));
                 border-radius: 50%; box-shadow: 0 0 50px var(--bamboo);
                 animation: pulse var(--ps, 4s) infinite ease-in-out;
-                cursor: pointer; transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
-                z-index: 10;
+                cursor: pointer; transition: all 1s ease; z-index: 100;
+                display: flex; align-items: center; justify-content: center;
             }
+            .ignite-word { font-size: 0.8rem; letter-spacing: 0.15em; transition: opacity 0.6s; }
+            .fade-out { opacity: 0; }
 
-            #engine-hud {
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0,0,0,0.98); display: none; opacity: 0;
-                flex-direction: column; align-items: center; justify-content: center;
-                z-index: 20; transition: opacity 1s ease;
-            }
-
-            .hud-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 90%; max-width: 1100px; margin-top: 30px; }
-            .sector { border: 1px solid var(--bamboo); padding: 30px; text-align: center; }
-            .hud-title { color: var(--bamboo); font-size: 0.9rem; letter-spacing: 5px; margin-bottom: 15px; border-bottom: 1px solid var(--bamboo); padding-bottom: 10px; }
-            .hud-val { font-size: 1.5rem; color: var(--cyan); margin-bottom: 10px; }
-            .microcopy { font-size: 0.7rem; opacity: 0.5; line-height: 1.4; }
-
-            .reassurance { margin-bottom: 20px; font-size: 1rem; color: white; opacity: 0.9; letter-spacing: 1px; text-align: center; max-width: 600px; }
-
-            .continue-btn {
-                margin-top: 50px; padding: 15px 80px; border: 1px solid var(--cyan);
-                color: var(--cyan); cursor: pointer; letter-spacing: 5px;
-                transition: 0.3s; background: transparent; font-family: inherit;
-            }
-            .continue-btn:hover { background: var(--cyan); color: black; box-shadow: 0 0 30px var(--cyan); }
+            /* Hero Content: The Window */
+            #world-canvas { flex-grow: 1; display: none; opacity: 0; flex-direction: column; align-items: center; justify-content: center; transition: opacity 2s ease; text-align: center; }
             
-            .trust-line { margin-top: 15px; font-size: 0.65rem; opacity: 0.3; letter-spacing: 1px; }
+            /* The Interactive Bottom Dock (Power User Layer) */
+            .bottom-dock {
+                height: 180px; display: none; justify-content: center; align-items: flex-end; 
+                gap: 20px; padding-bottom: 40px; opacity: 0; transition: opacity 2s ease;
+            }
+            .dock-box {
+                border: 1px solid var(--bamboo); padding: 20px; width: 220px; 
+                opacity: 0.2; transform: scale(0.9); cursor: pointer;
+                transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                background: rgba(0,0,0,0.9);
+            }
+            .dock-box:hover { opacity: 1; transform: scale(1.1) translateY(-15px); border-color: var(--cyan); box-shadow: 0 0 30px var(--bamboo); }
+            .box-title { font-size: 0.7rem; letter-spacing: 4px; color: var(--bamboo); margin-bottom: 8px; }
+            .box-val { font-size: 1.2rem; color: var(--cyan); }
 
-            .dash-active .plasma-core { transform: scale(30); opacity: 0; pointer-events: none; }
-            .dash-active #engine-hud { display: flex; opacity: 1; }
+            .world-active .plasma-core { transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; }
+            .world-active #world-canvas, .world-active .bottom-dock { display: flex; opacity: 1; }
             
-            @keyframes pulse { 0%, 100% { transform: scale(0.95); } 50% { transform: scale(1); } }
+            @keyframes pulse { 0%, 100% { transform: translate(-50%, -50%) scale(0.95); } 50% { transform: translate(-50%, -50%) scale(1); } }
         </style>
     </head>
     <body id="main-body">
-        <div class="plasma-core" id="core" onclick="openDoor()"></div>
+        <div class="plasma-core" id="trigger" onclick="enterWorld()">
+            <span id="word" class="ignite-word">IGNITE</span>
+        </div>
         
-        <div id="engine-hud">
-            <div class="reassurance">We’ll ask a few quick questions to understand your goal — nothing is committed yet.</div>
+        <div id="world-canvas">
+            <h1 style="letter-spacing: 20px; color: var(--bamboo); margin: 0;">POSSIBILITY VISUALIZED</h1>
+            <p style="opacity: 0.7; margin-top: 20px; max-width: 600px;">We’re organizing your intent into a workable system flow. Nothing is committed yet.</p>
             
-            <div class="hud-grid">
-                <div class="sector">
-                    <div class="hud-title">ORCHESTRATION</div>
-                    <div class="hud-val">ACTIVE</div>
-                    <div class="microcopy">Structuring your idea so the next steps are clear.</div>
-                </div>
-                
-                <div class="sector">
-                    <div class="hud-title">SATELLITE</div>
-                    <div class="hud-val">SYNCED</div>
-                    <div class="microcopy">Preparing the tools needed to support your goal.</div>
-                </div>
-
-                <div class="sector">
-                    <div class="hud-title">CAPACITY</div>
-                    <div class="hud-val" id="hud-energy">---</div>
-                    <div class="microcopy">Shared system capacity. Your usage is well within the free range.</div>
-                </div>
+            <div style="margin-top: 40px; border: 1px solid var(--cyan); padding: 15px 40px; font-size: 0.9rem; cursor: pointer; color: var(--cyan);" onclick="alert('Proceeding to Question Protocol...')">
+                [ CONTINUE ]
             </div>
+            <div style="margin-top: 15px; font-size: 0.65rem; opacity: 0.3; letter-spacing: 1px;">No credit card required. You’ll see options before anything is final.</div>
+        </div>
 
-            <button class="continue-btn" onclick="nextStage()">[ CONTINUE ]</button>
-            <div class="trust-line">No credit card required. You’ll see options before anything is final.</div>
-            
-            <div style="margin-top: 40px; font-size: 0.6rem; opacity: 0.2; cursor: pointer;" onclick="closeDoor()">Return to core</div>
+        <div class="bottom-dock">
+            <div class="dock-box">
+                <div class="box-title">ORCHESTRATION</div>
+                <div class="box-val">ACTIVE</div>
+                <p style="font-size: 0.6rem; opacity: 0.5; margin-top: 10px;">Structuring the logic path.</p>
+            </div>
+            <div class="dock-box">
+                <div class="box-title">SATELLITE</div>
+                <div class="box-val">SYNCED</div>
+                <p style="font-size: 0.6rem; opacity: 0.5; margin-top: 10px;">Connecting required nodes.</p>
+            </div>
+            <div class="dock-box">
+                <div class="box-title">CAPACITY</div>
+                <div id="hud-energy" class="box-val">---</div>
+                <p style="font-size: 0.6rem; opacity: 0.5; margin-top: 10px;">Usage: Free Range.</p>
+            </div>
         </div>
 
         <script>
-            function openDoor() { document.getElementById('main-body').classList.add('dash-active'); }
-            function closeDoor() { document.getElementById('main-body').classList.remove('dash-active'); }
-            function nextStage() { alert("Transitioning to Question Protocol..."); }
+            const words = ["IGNITE", "ENGAGE", "ALIGN", "ORCHESTRATE", "BUILD", "EVOLVE"];
+            let idx = 0;
+            const wordEl = document.getElementById("word");
+            const trigger = document.getElementById("trigger");
+
+            trigger.addEventListener("mouseenter", () => {
+                this.loop = setInterval(() => {
+                    wordEl.classList.add("fade-out");
+                    setTimeout(() => {
+                        idx = (idx + 1) % words.length;
+                        wordEl.textContent = words[idx];
+                        wordEl.classList.remove("fade-out");
+                    }, 600);
+                }, 2800);
+            });
+            trigger.addEventListener("mouseleave", () => {
+                clearInterval(this.loop);
+                wordEl.textContent = "IGNITE";
+            });
+
+            function enterWorld() { document.getElementById('main-body').classList.add('world-active'); }
             
             function updateData() {
                 fetch('/api/energy').then(r => r.json()).then(d => {
                     document.getElementById('hud-energy').innerText = d.energy;
-                    document.getElementById('core').style.setProperty('--ps', d.speed);
+                    trigger.style.setProperty('--ps', d.speed);
                 });
             }
             setInterval(updateData, 5000);
