@@ -14,8 +14,44 @@ def get_energy():
     except:
         return jsonify({"speed": "4s", "energy": "Stabilizing..."})
 
+@app.route('/rhizome/<node_id>')
+def referral_landing(node_id):
+    return render_template_string("""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ML11 | Unit Allocated</title>
+        <style>
+            :root { --bamboo: #4dbb5b; --dark: #050a05; }
+            body { margin: 0; background: #000; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; font-family: 'Courier New', monospace; color: white; }
+            .plasma-core {
+                width: 160px; height: 160px;
+                background: radial-gradient(circle, var(--bamboo), var(--dark));
+                border-radius: 50%; box-shadow: 0 0 50px var(--bamboo);
+                animation: pulse 4s infinite ease-in-out; cursor: pointer;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .msg { margin-top: 40px; text-align: center; max-width: 400px; line-height: 1.6; }
+            @keyframes pulse { 0%, 100% { transform: scale(0.95); } 50% { transform: scale(1); } }
+        </style>
+    </head>
+    <body>
+        <div class="plasma-core" onclick="location.href='/'">
+            <span style="font-size: 0.7rem; letter-spacing: 2px;">IGNITE</span>
+        </div>
+        <div class="msg">
+            <h2 style="color: var(--bamboo); letter-spacing: 5px;">UNIT ALLOCATED</h2>
+            <p style="font-size: 0.8rem; opacity: 0.6;">A peer has shared their system capacity with you. Click the core to initialize your node.</p>
+        </div>
+    </body>
+    </html>
+    """)
+
 @app.route('/')
 def index():
+    # ... (Keep existing index logic with the grey referral box)
     return render_template_string("""
     <!DOCTYPE html>
     <html lang="en">
@@ -26,81 +62,40 @@ def index():
         <style>
             :root { --bamboo: #4dbb5b; --cyan: #00f2ff; --mid-grey: #2a2a2a; }
             body { margin: 0; background: #000; height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-family: 'Courier New', monospace; color: white; }
-            
-            /* Persistent Referral Box (Bottom Left) */
             .referral-hub {
                 position: fixed; bottom: 20px; left: 20px; width: 180px; height: 45px;
                 background: var(--mid-grey); border: 1px solid #444; border-radius: 4px;
                 display: flex; align-items: center; justify-content: center;
                 font-size: 0.65rem; letter-spacing: 2px; color: #888;
-                cursor: pointer; z-index: 1000; transition: all 0.3s ease;
+                cursor: pointer; z-index: 1000; transition: 0.3s;
             }
             .referral-hub:hover { background: #333; color: var(--bamboo); border-color: var(--bamboo); }
-            .referral-hub:active { transform: scale(0.95); }
-
-            /* Ignition Core */
             .plasma-core {
                 width: 150px; height: 150px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
                 background: radial-gradient(circle, var(--bamboo), #050a05);
                 border-radius: 50%; box-shadow: 0 0 50px var(--bamboo);
-                animation: pulse var(--ps, 4s) infinite ease-in-out;
-                cursor: pointer; z-index: 10;
+                animation: pulse 4s infinite ease-in-out; cursor: pointer;
             }
-
-            /* Main World View */
-            #world-canvas { flex-grow: 1; display: none; opacity: 0; flex-direction: column; align-items: center; justify-content: center; transition: opacity 2s ease; }
-            
-            /* Capacity Display */
-            .cap-indicator { margin-top: 20px; font-size: 0.7rem; color: var(--cyan); }
-            .download-lock { margin-top: 30px; padding: 15px 30px; border: 1px solid #333; color: #444; cursor: not-allowed; }
-
+            #world-canvas { flex-grow: 1; display: none; opacity: 0; flex-direction: column; align-items: center; justify-content: center; transition: 2s; }
             .world-active .plasma-core { display: none; }
             .world-active #world-canvas { display: flex; opacity: 1; }
-            
             @keyframes pulse { 0%, 100% { transform: translate(-50%, -50%) scale(0.95); } 50% { transform: translate(-50%, -50%) scale(1); } }
-            @keyframes pulse-grey { 0%, 100% { box-shadow: 0 0 5px var(--mid-grey); } 50% { box-shadow: 0 0 20px var(--bamboo); } }
-            .pulse-request { animation: pulse-grey 1s infinite; color: var(--bamboo) !important; border-color: var(--bamboo) !important; }
         </style>
     </head>
     <body id="main-body">
-        <div class="referral-hub" id="ref-box" onclick="copyReferral()">
-            [ SHARE CAPACITY ]
-        </div>
-
-        <div class="plasma-core" id="core" onclick="enterWorld()"></div>
-        
+        <div class="referral-hub" onclick="copyReferral()">[ SHARE CAPACITY ]</div>
+        <div class="plasma-core" onclick="enterWorld()"></div>
         <div id="world-canvas">
             <h1 style="letter-spacing: 15px; color: var(--bamboo);">SYSTEM VIEW</h1>
-            <div class="cap-indicator">ORCHESTRATION LOAD: 92% (LIMIT REACHED)</div>
-            
-            <div class="download-lock" onclick="triggerReferralPulse()">
-                [ DOWNLOAD WORK ]
-            </div>
-            <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 10px;">Expand capacity via referral hub to unlock download.</p>
+            <div style="border: 1px solid #333; padding: 15px 30px; color: #444; cursor: not-allowed; margin-top: 30px;">[ DOWNLOAD WORK ]</div>
         </div>
-
         <script>
             function enterWorld() { document.getElementById('main-body').classList.add('world-active'); }
-            
-            function triggerReferralPulse() {
-                const refBox = document.getElementById('ref-box');
-                refBox.classList.add('pulse-request');
-                setTimeout(() => refBox.classList.remove('pulse-request'), 3000);
-            }
-
             function copyReferral() {
-                const link = "https://morphline11.co/rhizome/private-node-" + Math.random().toString(36).substr(2, 5);
+                const link = "https://morphline11.co/rhizome/node-" + Math.random().toString(36).substr(2, 5);
                 navigator.clipboard.writeText(link);
-                alert("Rhizome Link Copied: " + link + "\\nShare to expand your unit's capacity.");
+                alert("Rhizome Link Copied: " + link);
             }
-            
-            function updateData() {
-                fetch('/api/energy').then(r => r.json()).then(d => {
-                    document.getElementById('core').style.setProperty('--ps', d.speed);
-                });
-            }
-            setInterval(updateData, 5000);
-            updateData();
         </script>
     </body>
     </html>
