@@ -22,7 +22,7 @@ def index():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>MorphLine 11 | Engine HUD</title>
+        <title>ML11 | The Opening</title>
         <style>
             :root { --bamboo: #4dbb5b; --cyan: #00f2ff; --dark: #050a05; }
             body { margin: 0; background: #000; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: 'Courier New', monospace; color: white; }
@@ -32,54 +32,59 @@ def index():
                 background: radial-gradient(circle, var(--bamboo), var(--dark));
                 border-radius: 50%; box-shadow: 0 0 50px var(--bamboo);
                 animation: pulse var(--ps, 4s) infinite ease-in-out;
-                cursor: pointer; transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+                cursor: pointer; transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
                 z-index: 10; display: flex; align-items: center; justify-content: center;
             }
-            .plasma-core:hover { transform: scale(1.1); box-shadow: 0 0 80px var(--bamboo); }
-            .plasma-core:hover::after { content: 'IGNITE'; font-size: 0.8rem; letter-spacing: 4px; color: white; }
 
-            /* The Modular HUD */
+            /* The "Open Door" HUD */
             #engine-hud {
                 position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0,0,0,0.95); display: none; opacity: 0;
-                grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 50px;
-                box-sizing: border-box; z-index: 20; transition: opacity 0.5s;
+                background: rgba(0,0,0,0.98); display: none; opacity: 0;
+                flex-direction: column; align-items: center; justify-content: center;
+                z-index: 20; transition: opacity 1s ease;
             }
-            .hud-sector { border: 1px solid var(--bamboo); padding: 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-            .hud-title { color: var(--bamboo); font-size: 1rem; letter-spacing: 5px; margin-bottom: 20px; border-bottom: 1px solid var(--bamboo); width: 100%; }
-            .hud-val { font-size: 1.8rem; color: var(--cyan); }
 
-            .dash-active .plasma-core { transform: scale(0.2); position: fixed; top: 20px; left: 20px; }
-            .dash-active #engine-hud { display: grid; opacity: 1; }
+            .hud-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 80%; max-width: 1000px; }
+            .sector { border: 1px solid var(--bamboo); padding: 30px; text-align: center; transition: 0.3s; }
+            .sector:hover { background: rgba(77, 187, 91, 0.1); border-color: var(--cyan); }
+
+            .welcome-msg { margin-bottom: 50px; text-align: center; animation: slideUp 1.5s ease; }
+            .dash-active .plasma-core { transform: scale(30); opacity: 0; pointer-events: none; }
+            .dash-active #engine-hud { display: flex; opacity: 1; }
             
-            @keyframes pulse { 0%, 100% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1); opacity: 1; } }
+            @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes pulse { 0%, 100% { transform: scale(0.95); } 50% { transform: scale(1); } }
         </style>
     </head>
     <body id="main-body">
-        <div class="plasma-core" id="core" onclick="engageHUD()"></div>
+        <div class="plasma-core" id="core" onclick="openDoor()"></div>
         
         <div id="engine-hud">
-            <div class="hud-sector">
-                <div class="hud-title">ORCHESTRATION</div>
-                <div class="hud-val">ACTIVE</div>
-                <p style="font-size: 0.7rem; opacity: 0.5;">Logic flow optimized for 300M+ users.</p>
+            <div class="welcome-msg">
+                <h1 style="letter-spacing: 10px; color: var(--bamboo);">DOOR OPEN: ML11 ACTIVE</h1>
+                <p style="opacity: 0.6;">Welcome to the Orchestration Hub. Select a sector to begin.</p>
             </div>
-            <div class="hud-sector">
-                <div class="hud-title">CAPACITY</div>
-                <div class="hud-val" id="hud-energy">---</div>
-                <p style="font-size: 0.7rem; opacity: 0.5;">Live global energy throughput.</p>
+            <div class="hud-grid">
+                <div class="sector" onclick="alert('Brain Sync Active')">
+                    <h3 style="color: var(--cyan);">BRAIN</h3>
+                    <p style="font-size: 0.7rem;">Logic Orchestration</p>
+                </div>
+                <div class="sector">
+                    <h3 style="color: var(--cyan);">FUEL</h3>
+                    <div id="hud-energy" style="font-size: 1.2rem;">---</div>
+                    <p style="font-size: 0.7rem;">Live Capacity</p>
+                </div>
+                <div class="sector" onclick="alert('Satellite Sync Active')">
+                    <h3 style="color: var(--cyan);">LINK</h3>
+                    <p style="font-size: 0.7rem;">Global Reach</p>
+                </div>
             </div>
-            <div class="hud-sector">
-                <div class="hud-title">SATELLITE</div>
-                <div class="hud-val">SYNCING</div>
-                <p style="font-size: 0.7rem; opacity: 0.5;">Establishing real-time connection nodes.</p>
-            </div>
-            <p style="grid-column: span 3; color: var(--bamboo); cursor: pointer; margin-top: 20px;" onclick="disengage()">[ RETURN TO CORE ]</p>
+            <p style="margin-top: 50px; cursor: pointer; color: var(--bamboo);" onclick="closeDoor()">[ CLOSE DOOR ]</p>
         </div>
 
         <script>
-            function engageHUD() { document.getElementById('main-body').classList.add('dash-active'); }
-            function disengage() { document.getElementById('main-body').classList.remove('dash-active'); }
+            function openDoor() { document.getElementById('main-body').classList.add('dash-active'); }
+            function closeDoor() { document.getElementById('main-body').classList.remove('dash-active'); }
             
             function updateData() {
                 fetch('/api/energy').then(r => r.json()).then(d => {
