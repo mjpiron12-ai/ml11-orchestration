@@ -22,79 +22,76 @@ def index():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>ML11 | v0.01.1</title>
+        <title>ML11 | Referral Hub</title>
         <style>
             :root { --bamboo: #4dbb5b; --cyan: #00f2ff; --dark: #050a05; --grey: #1a1a1a; }
             body { margin: 0; background: #000; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: 'Courier New', monospace; color: white; }
             
-            /* The Core */
-            .plasma-core { 
-                width: 160px; height: 160px; 
-                background: radial-gradient(circle, var(--bamboo), var(--dark)); 
-                border-radius: 50%; box-shadow: 0 0 50px var(--bamboo); 
-                cursor: pointer; display: flex; align-items: center; justify-content: center; 
-                z-index: 10; animation: pulse 4s infinite ease-in-out;
-            }
-            .verb { font-size: 0.8rem; letter-spacing: 5px; text-shadow: 0 0 10px var(--bamboo); transition: 0.6s; }
-
-            /* Bottom-Left Instrument Dock */
-            .referral-hub {
-                position: fixed; bottom: 20px; left: 20px; width: 200px; height: 45px;
+            /* Referral Module */
+            .referral-module {
+                position: fixed; bottom: 20px; left: 20px; width: 280px; min-height: 60px;
                 background: var(--grey); border: 1px solid #333; border-radius: 4px;
-                display: flex; align-items: center; justify-content: center;
-                font-size: 0.65rem; letter-spacing: 2px; color: #666; cursor: pointer; transition: 0.3s; z-index: 100;
+                padding: 12px 15px; cursor: pointer; transition: 0.3s; z-index: 1000;
+                display: flex; flex-direction: column; justify-content: center;
             }
-            .referral-hub:hover { border-color: var(--bamboo); color: var(--bamboo); }
-            .referral-hub.copied-state { color: var(--cyan); border-color: var(--cyan); }
+            .referral-module:hover { border-color: var(--bamboo); }
+            
+            .primary-line { font-size: 0.95rem; color: #fff; letter-spacing: 1px; margin-bottom: 4px; }
+            .secondary-line { font-size: 0.65rem; color: #888; letter-spacing: 0.5px; line-height: 1.2; }
+            
+            /* Success Checkmark */
+            #check-icon { position: absolute; top: 10px; right: 10px; color: var(--bamboo); opacity: 0; transition: opacity 0.4s; font-size: 0.8rem; }
+            #check-icon.fade { opacity: 1; }
 
-            /* The Toast Notification */
+            /* Toast Notification */
             #toast {
-                position: fixed; bottom: 75px; left: 20px; padding: 10px 15px;
-                background: rgba(5, 10, 5, 0.95); border: 1px solid var(--bamboo);
-                font-size: 0.6rem; letter-spacing: 1px; color: white;
-                opacity: 0; visibility: hidden; transition: opacity 0.4s, visibility 0.4s;
-                z-index: 90; pointer-events: none;
+                position: fixed; bottom: 100px; left: 20px; padding: 12px 18px;
+                background: rgba(5, 10, 5, 0.98); border: 1px solid var(--bamboo);
+                font-size: 0.7rem; color: white; opacity: 0; visibility: hidden; 
+                transition: 0.4s; z-index: 1100; pointer-events: none;
+                display: flex; flex-direction: column; gap: 4px;
             }
             #toast.visible { opacity: 1; visibility: visible; }
+            .toast-micro { font-size: 0.55rem; opacity: 0.6; }
 
+            .plasma-core { width: 160px; height: 160px; background: radial-gradient(circle, var(--bamboo), var(--dark)); border-radius: 50%; box-shadow: 0 0 50px var(--bamboo); animation: pulse 4s infinite ease-in-out; }
+            
+            @media (max-width: 380px) {
+                .referral-module { left: 50%; transform: translateX(-50%); width: 90%; }
+                #toast { left: 50%; transform: translateX(-50%); width: 80%; text-align: center; }
+            }
             @keyframes pulse { 0%, 100% { transform: scale(0.95); } 50% { transform: scale(1); } }
         </style>
     </head>
     <body>
-        <div id="toast">LINK COPIED. +500 CAPACITY WHEN THEY ACTIVATE.</div>
-        <div class="referral-hub" id="ref-btn" onclick="copyReferral()">[ SHARE CAPACITY ]</div>
-        
-        <div class="plasma-core">
-            <span id="verb-text" class="verb">IGNITE</span>
+        <div id="toast">
+            <div>Referral link copied.</div>
+            <div class="toast-micro">Share it — you both get +500 capacity when they activate.</div>
         </div>
 
-        <script>
-            const words = ["IGNITE", "ENGAGE", "ALIGN", "ORCHESTRATE", "BUILD", "EVOLVE"];
-            let idx = 0;
-            setInterval(() => {
-                idx = (idx + 1) % words.length;
-                document.getElementById('verb-text').textContent = words[idx];
-            }, 2800);
+        <div class="referral-module" onclick="copyReferral()">
+            <div id="check-icon">✓</div>
+            <div class="primary-line">Click here to refer a friend</div>
+            <div class="secondary-line">Receive additional capacity — 500 units for you + 500 for them.</div>
+        </div>
+        
+        <div class="plasma-core"></div>
 
+        <script>
             async function copyReferral() {
                 const url = "https://morphline11.co/rhizome/node-fs3gg";
-                const btn = document.getElementById('ref-btn');
                 const toast = document.getElementById('toast');
+                const check = document.getElementById('check-icon');
 
                 try {
                     await navigator.clipboard.writeText(url);
-                    btn.innerText = "[ COPIED ]";
-                    btn.classList.add('copied-state');
+                    check.classList.add('fade');
                     toast.classList.add('visible');
 
-                    setTimeout(() => {
-                        btn.innerText = "[ SHARE CAPACITY ]";
-                        btn.classList.remove('copied-state');
-                    }, 1200);
-
+                    setTimeout(() => { check.classList.remove('fade'); }, 1200);
                     setTimeout(() => { toast.classList.remove('visible'); }, 2500);
                 } catch (err) {
-                    toast.innerText = "COPY FAILED. TRY AGAIN.";
+                    toast.innerHTML = "<div>COPY FAILED. TRY AGAIN.</div>";
                     toast.style.borderColor = "#ff4444";
                     toast.classList.add('visible');
                     setTimeout(() => toast.classList.remove('visible'), 2500);
