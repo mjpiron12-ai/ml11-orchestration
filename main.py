@@ -43,26 +43,24 @@ def index():
                 z-index: 20; transition: opacity 1s ease;
             }
 
-            .welcome-msg { text-align: center; margin-bottom: 40px; }
-            .guidance { color: var(--bamboo); opacity: 0.7; font-size: 0.9rem; margin-top: 10px; }
+            .hud-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 90%; max-width: 1100px; margin-top: 30px; }
+            .sector { border: 1px solid var(--bamboo); padding: 30px; text-align: center; }
+            .hud-title { color: var(--bamboo); font-size: 0.9rem; letter-spacing: 5px; margin-bottom: 15px; border-bottom: 1px solid var(--bamboo); padding-bottom: 10px; }
+            .hud-val { font-size: 1.5rem; color: var(--cyan); margin-bottom: 10px; }
+            .microcopy { font-size: 0.7rem; opacity: 0.5; line-height: 1.4; }
 
-            .hud-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 80%; max-width: 800px; }
-            .sector { border: 1px solid var(--bamboo); padding: 25px; text-align: center; }
-            .label { font-size: 0.7rem; opacity: 0.6; letter-spacing: 2px; margin-bottom: 10px; }
+            .reassurance { margin-bottom: 20px; font-size: 1rem; color: white; opacity: 0.9; letter-spacing: 1px; text-align: center; }
 
             .continue-btn {
-                margin-top: 50px; padding: 15px 60px; border: 1px solid var(--cyan);
+                margin-top: 50px; padding: 15px 80px; border: 1px solid var(--cyan);
                 color: var(--cyan); cursor: pointer; letter-spacing: 5px;
-                transition: 0.3s; background: transparent; animation: buttonPulse 2s infinite;
+                transition: 0.3s; background: transparent; font-family: inherit;
             }
             .continue-btn:hover { background: var(--cyan); color: black; box-shadow: 0 0 30px var(--cyan); }
-            
-            .hint { margin-top: 15px; font-size: 0.7rem; opacity: 0.4; }
 
             .dash-active .plasma-core { transform: scale(30); opacity: 0; pointer-events: none; }
             .dash-active #engine-hud { display: flex; opacity: 1; }
             
-            @keyframes buttonPulse { 0%, 100% { box-shadow: 0 0 5px var(--cyan); } 50% { box-shadow: 0 0 20px var(--cyan); } }
             @keyframes pulse { 0%, 100% { transform: scale(0.95); } 50% { transform: scale(1); } }
         </style>
     </head>
@@ -70,26 +68,31 @@ def index():
         <div class="plasma-core" id="core" onclick="openDoor()"></div>
         
         <div id="engine-hud">
-            <div class="welcome-msg">
-                <h1 style="letter-spacing: 15px; color: var(--bamboo); margin: 0;">VEHICLE ENGAGED</h1>
-                <div class="guidance">Let’s get a bit more clarity so we can help you properly.</div>
-            </div>
+            <div class="reassurance">We’ll ask a few quick questions so we can help you properly.</div>
             
             <div class="hud-grid">
                 <div class="sector">
-                    <div class="label">THRUST STATUS</div>
-                    <div style="color: var(--cyan); font-size: 1.5rem;">ACTIVE</div>
+                    <div class="hud-title">ORCHESTRATION</div>
+                    <div class="hud-val">ACTIVE</div>
+                    <div class="microcopy">Organizing your request into a workable flow.</div>
                 </div>
+                
                 <div class="sector">
-                    <div class="label">SYSTEM CAPACITY IN USE</div>
-                    <div id="hud-energy" style="color: var(--cyan); font-size: 1.5rem;">---</div>
+                    <div class="hud-title">SATELLITE</div>
+                    <div class="hud-val">SYNCED</div>
+                    <div class="microcopy">Connecting the tools needed for your task.</div>
+                </div>
+
+                <div class="sector">
+                    <div class="hud-title">CAPACITY</div>
+                    <div class="hud-val" id="hud-energy">---</div>
+                    <div class="microcopy">Shared system capacity. You’re using a small fraction.</div>
                 </div>
             </div>
 
             <button class="continue-btn" onclick="nextStage()">[ CONTINUE ]</button>
-            <div class="hint">We’ll ask a few questions to understand what you’re trying to build.</div>
             
-            <div style="margin-top: 40px; font-size: 0.6rem; opacity: 0.2; cursor: pointer;" onclick="closeDoor()">DISENGAGE</div>
+            <div style="margin-top: 40px; font-size: 0.6rem; opacity: 0.2; cursor: pointer;" onclick="closeDoor()">Return to core</div>
         </div>
 
         <script>
